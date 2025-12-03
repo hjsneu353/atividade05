@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerenciador de Produtos</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        .form-group { margin-bottom: 1rem; }
+        input { padding: 8px; width: 100%; box-sizing: border-box; margin-top: 5px; }
+        button { padding: 10px 20px; background-color: #28a745; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #218838; }
+        ul { list-style-type: none; padding: 0; }
+        li { background: #f4f4f4; margin: 5px 0; padding: 10px; border-bottom: 1px solid #ddd; display: flex; justify-content: space-between; }
+    </style>
+</head>
+<body>
+
+    <h2>Adicionar Produto</h2>
+    <div class="form-group">
+        <label>Nome do Produto:</label>
+        <input type="text" id="nome" placeholder="Ex: Notebook">
+    </div>
+    <div class="form-group">
+        <label>Preço (R$):</label>
+        <input type="number" id="preco" placeholder="Ex: 2500.00">
+    </div>
+    <button onclick="adicionarProduto()">Salvar Produto</button>
+
+    <hr>
+
+    <h2>Lista de Produtos</h2>
+    <ul id="lista-produtos">
+        </ul>
+
+    <script>
+        const API_URL = 'http://localhost:3000/produtos';
+
+        // Função para carregar produtos (GET)
+        async function carregarProdutos() {
+            try {
+                const resposta = await fetch(API_URL);
+                const resultado = await resposta.json();
+                const lista = document.getElementById('lista-produtos');
+                lista.innerHTML = ''; // Limpa a lista antes de renderizar
+
+                resultado.data.forEach(produto => {
+                    const item = document.createElement('li');
+                    item.innerHTML = `<strong>${produto.nome}</strong> <span>R$ ${produto.preco}</span>`;
+                    lista.appendChild(item);
+                });
+            } catch (erro) {
+                console.error('Erro ao carregar:', erro);
+            }
+        }
+
+        // Função para adicionar produto (POST)
+        async function adicionarProduto() {
+            const nome = document.getElementById('nome').value;
+            const preco = document.getElementById('preco').value;
+
+            if (!nome || !preco) return alert('Preencha todos os campos!');
+
+            try {
+                const resposta = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ nome, preco })
+                });
+
+                if (resposta.ok) {
+                    // Limpar campos e recarregar lista
+                    document.getElementById('nome').value = '';
+                    document.getElementById('preco').value = '';
+                    carregarProdutos();
+                } else {
+                    alert('Erro ao salvar produto');
+                }
+            } catch (erro) {
+                console.error('Erro ao salvar:', erro);
+            }
+        }
+
+        // Carregar a lista assim que abrir a página
+        carregarProdutos();
+    </script>
+</body>
+</html>
